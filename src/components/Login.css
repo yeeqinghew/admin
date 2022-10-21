@@ -1,0 +1,10 @@
+label{
+    display: inline-block;
+    clear: left;
+    text-align: right;
+    float: center;
+}
+input {
+  display: inline-block;
+  float: center;
+}
