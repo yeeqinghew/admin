@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import "./AddEditProjects.css";
 import fireDb, { storage } from "../../firebase";
@@ -18,6 +18,7 @@ const initialState = {
 };
 
 const AddEditProjects = () => {
+  const fileRef = useRef();
   const [state, setState] = useState(initialState);
   const [data, setData] = useState({});
   const [options, setOptions] = useState([]);
@@ -83,27 +84,43 @@ const AddEditProjects = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!title || !desc || !goal || !closingDate || !url || !uploadedFile) {
-      toast.error("Please provide a value or upload a file.");
+      toast.error("Please fill up the form or upload an image.");
     } else {
       if (!id) {
-        fireDb.child("Project").push(state, (err) => {
-          if (err) {
-            toast.error(err);
-          } else {
-            const storageReference = ref(
-              storage,
-              `/project_images/${uploadedFile.name}`
-            );
-            uploadBytes(storageReference, uploadedFile).then((snapshot) => {
-              getDownloadURL(snapshot.ref).then((downloadURL) => {
-                console.log("downloadURL", downloadURL);
-              });
-            });
+        // get the newly created project ID for image later
+        const projectId = fireDb
+          .child("Project")
+          .push(state, (err) => {
+            if (err) {
+              toast.error(err);
+            }
+          })
+          .getKey();
 
-            // TODO: get the newly created project ID and store file into it
-            toast.success("Project created successfully");
-          }
-        });
+        if (projectId) {
+          // store image into Storage /project_images/xx
+          const storageReference = ref(
+            storage,
+            `/project_images/${uploadedFile.name}`
+          );
+          // get the downloadURL
+          uploadBytes(storageReference, uploadedFile).then((snapshot) => {
+            getDownloadURL(snapshot.ref).then((downloadURL) => {
+              // store this imageLink into project
+              fireDb
+                .child(`Project/${projectId}`)
+                .set({ ...state, file: downloadURL }, (err) => {
+                  if (err) {
+                    toast.error(err);
+                    return;
+                  }
+
+                  fileRef.current.value = "";
+                  toast.success("Project created successfully!");
+                });
+            });
+          });
+        }
       } else {
         fireDb.child(`Project/${id}`).set(state, (err) => {
           if (err) {
@@ -208,6 +225,7 @@ const AddEditProjects = () => {
           />
 
           <input
+            ref={fileRef}
             type="file"
             accept="image/*"
             onChange={(event) => {

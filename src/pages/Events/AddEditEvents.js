@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import "./AddEditEvents.css";
-import fireDb from "../../firebase";
+import fireDb, { storage } from "../../firebase";
 import { toast } from "react-toastify";
 import Header from "../../components/Header";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 
 // put into List googleplaceAPI upload IMG REWARDS ID
 const initialState = {
@@ -18,12 +19,14 @@ const initialState = {
   eventpoints: "", //number
   goaltitle: "", //str
   goalpoints: "", //number
-  maxparticipants: ""
+  maxparticipants: "",
 };
 
 const AddEditEvents = () => {
+  const fileRef = useRef();
   const [state, setState] = useState(initialState);
   const [data, setData] = useState({});
+  const [uploadedFile, setUploadedFile] = useState("");
   const [options, setOptions] = useState([]);
   const [options2, setOptions2] = useState([]);
 
@@ -38,6 +41,7 @@ const AddEditEvents = () => {
     eventpoints,
     goaltitle,
     maxparticipants,
+    file,
   } = state;
 
   const navigate = useNavigate();
@@ -62,14 +66,14 @@ const AddEditEvents = () => {
   useEffect(() => {
     fireDb.child("Quest").on("value", (snapshot) => {
       if (snapshot.val() !== null) {
-        const optionArr = []
-        var index=1;
+        const optionArr = [];
+        var index = 1;
         snapshot.forEach((child) => {
-          optionArr.push(child.val().questTitle)
-          index += 1
+          optionArr.push(child.val().questTitle);
+          index += 1;
         });
-        setOptions(optionArr)
-      } 
+        setOptions(optionArr);
+      }
     });
 
     return () => {
@@ -80,21 +84,20 @@ const AddEditEvents = () => {
   useEffect(() => {
     fireDb.child("Quest").on("value", (snapshot) => {
       if (snapshot.val() !== null) {
-        const optionArr2 = []
-        var index=1;
+        const optionArr2 = [];
+        var index = 1;
         snapshot.forEach((child) => {
-          optionArr2.push(child.val().goalTitle)
-          index += 1
+          optionArr2.push(child.val().goalTitle);
+          index += 1;
         });
-        setOptions2(optionArr2)
-      } 
+        setOptions2(optionArr2);
+      }
     });
 
     return () => {
       setOptions2({});
     };
   }, [id]);
-
 
   useEffect(() => {
     if (id) {
@@ -124,18 +127,45 @@ const AddEditEvents = () => {
       !eventlocation ||
       !eventpoints ||
       !goaltitle ||
-      !maxparticipants
+      !maxparticipants ||
+      !uploadedFile
     ) {
       toast.error("Please provide a value in each input field.");
     } else {
       if (!id) {
-        fireDb.child("CreateEvent").push(state, (err) => {
-          if (err) {
-            toast.error(err);
-          } else {
-            toast.success("Event created successfully");
-          }
-        });
+        const eventId = fireDb
+          .child("CreateEvent")
+          .push(state, (err) => {
+            if (err) {
+              toast.error(err);
+            }
+          })
+          .getKey();
+
+        if (eventId) {
+          // store image into Storage /event_images/xx
+          const storageReference = ref(
+            storage,
+            `/event_images/${uploadedFile.name}`
+          );
+
+          // get the downloadURL
+          uploadBytes(storageReference, uploadedFile).then((snapshot) => {
+            getDownloadURL(snapshot.ref).then((downloadURL) => {
+              fireDb
+                .child(`CreateEvent/${eventId}`)
+                .set({ ...state, file: downloadURL }, (err) => {
+                  if (err) {
+                    toast.error(err);
+                    return;
+                  }
+
+                  fileRef.current.value = "";
+                  toast.success("Event created successfully!");
+                });
+            });
+          });
+        }
       } else {
         fireDb.child(`CreateEvent/${id}`).set(state, (err) => {
           if (err) {
@@ -152,9 +182,9 @@ const AddEditEvents = () => {
 
   return (
     <>
-    <Header />
-    <br />
-    <br />
+      <Header />
+      <br />
+      <br />
       <Link to="/eventsHome">
         <button className="btn btn-edit">
           <p
@@ -176,13 +206,15 @@ const AddEditEvents = () => {
           onSubmit={handleSubmit}
         >
           <label htmlFor="challengetitle">Quest Title</label>
-          <select id="challengetitle" name="challengetitle" onChange={handleInputChange}>
-          {
-            options.map((item, index) => {
-              return <option value={options[index]}>{options[index]}</option>
-            })
-          }
-        </select>
+          <select
+            id="challengetitle"
+            name="challengetitle"
+            onChange={handleInputChange}
+          >
+            {options.map((item, index) => {
+              return <option value={options[index]}>{options[index]}</option>;
+            })}
+          </select>
 
           <label htmlFor="eventtitle">Event Title</label>
           <input
@@ -255,13 +287,11 @@ const AddEditEvents = () => {
 
           <label htmlFor="goaltitle">Goal Title</label>
           <select id="goaltitle" name="goaltitle" onChange={handleInputChange}>
-          {
-            options2.map((item, index) => {
-              return <option value={options2[index]}>{options2[index]}</option>
-            })
-          }
-        </select>
-{/*
+            {options2.map((item, index) => {
+              return <option value={options2[index]}>{options2[index]}</option>;
+            })}
+          </select>
+          {/*
           <label htmlFor="goalpoints">Goal Points</label>
           <input
             type="number"
@@ -282,7 +312,17 @@ const AddEditEvents = () => {
             onChange={handleInputChange}
           />
 
-          
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            onChange={(event) => {
+              if (event.target.files[0]) {
+                setUploadedFile(event.target.files[0]);
+              }
+            }}
+          />
+
           <input type="submit" value={id ? "Update" : "Save"} />
         </form>
       </div>

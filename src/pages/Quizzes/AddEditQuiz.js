@@ -12,7 +12,6 @@ const initialState = {
   points: "",
 };
 
-
 const AddEditQuiz = () => {
   const [state, setState] = useState(initialState);
   const [data, setData] = useState({});
@@ -21,7 +20,7 @@ const AddEditQuiz = () => {
   const [options2, setOptions2] = useState([]);
   const [options3, setOptions3] = useState([]);
 
-  const { quizID, questId, quizType, points } = state; 
+  const { quizID, questId, quizType, points } = state;
 
   const navigate = useNavigate();
 
@@ -44,14 +43,14 @@ const AddEditQuiz = () => {
   useEffect(() => {
     fireDb.child("Quest").on("value", (snapshot) => {
       if (snapshot.val() !== null) {
-        const optionArr = []
-        var index=1;
+        const optionArr = [];
+        var index = 1;
         snapshot.forEach((child) => {
-          optionArr.push(child.val().questId)
-          index += 1
+          optionArr.push(child.val().questId);
+          index += 1;
         });
-        setOptions(optionArr)
-      } 
+        setOptions(optionArr);
+      }
     });
 
     return () => {
@@ -59,18 +58,17 @@ const AddEditQuiz = () => {
     };
   }, [id]);
 
-
   useEffect(() => {
     fireDb.child("QuizType").on("value", (snapshot) => {
       if (snapshot.val() !== null) {
-        const optionArr2 = []
-        var index=1;
+        const optionArr2 = [];
+        var index = 1;
         snapshot.forEach((child) => {
-          optionArr2.push(child.val().Type)
-          index += 1
+          optionArr2.push(child.val().Type);
+          index += 1;
         });
-        setOptions2(optionArr2)
-      } 
+        setOptions2(optionArr2);
+      }
     });
 
     return () => {
@@ -81,14 +79,14 @@ const AddEditQuiz = () => {
   useEffect(() => {
     fireDb.child("QuizType").on("value", (snapshot) => {
       if (snapshot.val() !== null) {
-        const optionArr3 = []
-        var index=1;
+        const optionArr3 = [];
+        var index = 1;
         snapshot.forEach((child) => {
-          optionArr3.push(child.val().Points)
-          index += 1
+          optionArr3.push(child.val().Points);
+          index += 1;
         });
-        setOptions3(optionArr3)
-      } 
+        setOptions3(optionArr3);
+      }
     });
 
     return () => {
@@ -115,7 +113,7 @@ const AddEditQuiz = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!quizID ) {
+    if (!quizID) {
       toast.error("Please provide a value in each input field.");
     } else {
       if (!id) {
@@ -142,7 +140,7 @@ const AddEditQuiz = () => {
 
   return (
     <>
-    <Header />
+      <Header />
       <br />
       <br />
       <Link to="/quizHome">
@@ -166,47 +164,45 @@ const AddEditQuiz = () => {
           }}
           onSubmit={handleSubmit}
         >
-
           <label htmlFor="quizID">Quiz ID</label>
           <input
             type="text"
             id="quizID"
             name="quizID"
             placeholder="Quiz ID..."
-            value={quizID} 
+            value={quizID}
             onChange={handleInputChange}
           />
 
           <label htmlFor="questId">Quest ID</label>
           <select id="questId" name="questId" onChange={handleInputChange}>
-          {
-            options.map((item, index) => {
-              return <option value={options[index]}>{options[index]}</option>
-            })
-          }
-        </select>
-
+            {options &&
+              options.map((item, index) => {
+                return <option value={options[index]}>{options[index]}</option>;
+              })}
+          </select>
 
           <label htmlFor="quizType">Quiz Type</label>
           <select id="quizType" name="quizType" onChange={handleInputChange}>
-          {
-            options2.map((item, index) => {
-              return <option value={options2[index]}>{options2[index]}</option>
-            })
-          }
-        </select>
+            {options2 &&
+              options2.map((item, index) => {
+                return (
+                  <option value={options2[index]}>{options2[index]}</option>
+                );
+              })}
+          </select>
 
           <label htmlFor="points">Points per quiz attempt</label>
           <select id="points" name="points" onChange={handleInputChange}>
-          {
-            options3.map((item, index) => {
-              return <option value={options3[index]}>{options3[index]}</option>
-            })
-          }
-        </select>
+            {options3 &&
+              options3.map((item, index) => {
+                return (
+                  <option value={options3[index]}>{options3[index]}</option>
+                );
+              })}
+          </select>
 
           <input type="submit" value={id ? "Update" : "Save"} />
-         
         </form>
       </div>
     </>

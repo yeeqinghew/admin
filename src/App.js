@@ -1,4 +1,4 @@
-import React, {Fragment} from "react";
+import React, { Fragment } from "react";
 import "./App.css";
 import { useState } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -31,12 +31,12 @@ import AddEditQuiz from "./pages/Quizzes/AddEditQuiz";
 
 function App() {
   return (
-      <BrowserRouter>
-        <Fragment>
+    <BrowserRouter>
+      <Fragment>
         <div className="App">
           <ToastContainer position="top-center" />
           <Routes>
-            <Route path="/" element={<Login/>} />
+            <Route path="/" element={<Login />} />
             <Route path="/Home" element={<Home />} />
             <Route path="/questHome" element={<QuestHome />} />
             <Route path="/addQuest" element={<AddEditQuests />} />
@@ -44,7 +44,10 @@ function App() {
             <Route path="/viewQuests/:id" element={<ViewQuests />} />
             <Route path="/activitiesHome" element={<ActivitiesHome />} />
             <Route path="/addActivities" element={<AddEditActivities />} />
-            <Route path="/updateActivities/:id" element={<AddEditActivities />}/>
+            <Route
+              path="/updateActivities/:id"
+              element={<AddEditActivities />}
+            />
             <Route path="/viewActivities/:id" element={<ViewActivities />} />
             <Route path="/eventsHome" element={<EventsHome />} />
             <Route path="/addEvents" element={<AddEditEvents />} />
@@ -67,10 +70,10 @@ function App() {
             <Route path="/quizHome" element={<QuizHome />} />
             <Route path="/addQuiz" element={<AddEditQuiz />} />
             <Route path="/updateQuiz/:id" element={<AddEditQuiz />} />
-        </Routes>
+          </Routes>
         </div>
-        </Fragment>
-      </BrowserRouter>
+      </Fragment>
+    </BrowserRouter>
   );
 }
 
