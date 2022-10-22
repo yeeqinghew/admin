@@ -83,7 +83,9 @@ const QuestHome = () => {
           </p>
         </button>
       </Link>
+
       <div style={{ marginTop: "50px" }}>
+        <h2 className="Joined Quest">All Quests</h2>
         <table className="styled-table">
           <thead>
             <tr>
@@ -124,19 +126,14 @@ const QuestHome = () => {
           </tbody>
         </table>
 
-        <h3
-          className="Joined Quest"
-          style={{ textAlign: "left", marginLeft: "160px" }}
-        >
-          Joined Quest
-        </h3>
+        <h2 className="Joined Quest">Joined Quest</h2>
         <table className="styled-table">
           <thead>
             <tr>
               <th style={{ textAlign: "center" }}>Quest ID</th>
               <th style={{ textAlign: "center" }}>Quest Title</th>
               <th style={{ textAlign: "center" }}>Merchant ID</th>
-              <th style={{ textAlign: "center" }}>Company Name</th>
+              <th style={{ textAlign: "center" }}>Action</th>
             </tr>
           </thead>
           <tbody>
@@ -150,10 +147,9 @@ const QuestHome = () => {
                         joinedQuestData[id].quest["questTitle"]}
                     </td>
                     <td>{joinedQuestData[id].merchantId}</td>
-                    <td>
-                      {joinedQuestData[id].merchant &&
-                        joinedQuestData[id].merchant["companyName"]}
-                    </td>
+                    <Link to={`/viewJoinedQuest/${id}`}>
+                      <button className="btn btn-view">View</button>
+                    </Link>
                   </tr>
                 );
               })}

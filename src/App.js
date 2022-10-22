@@ -28,6 +28,7 @@ import Home from "./pages/Home";
 import Login from "./components/Login";
 import QuizHome from "./pages/Quizzes/QuizHome";
 import AddEditQuiz from "./pages/Quizzes/AddEditQuiz";
+import ViewJoinedQuest from "./pages/Quests/ViewJoinedQuest";
 
 function App() {
   return (
@@ -42,6 +43,7 @@ function App() {
             <Route path="/addQuest" element={<AddEditQuests />} />
             <Route path="/updateQuests/:id" element={<AddEditQuests />} />
             <Route path="/viewQuests/:id" element={<ViewQuests />} />
+            <Route path="/viewJoinedQuest/:id" element={<ViewJoinedQuest />} />
             <Route path="/activitiesHome" element={<ActivitiesHome />} />
             <Route path="/addActivities" element={<AddEditActivities />} />
             <Route
