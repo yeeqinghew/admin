@@ -5,43 +5,77 @@ import { Link } from "react-router-dom";
 import "./QuestionsHome.css";
 import { toast } from "react-toastify";
 import Header from "../../components/Header";
-import {Card, CardHeader, CardBody, CardFooter} from "react-simple-card";
+import { Card, CardHeader, CardBody } from "react-simple-card";
 
 const QuestionsHome = () => {
-  const [data, setData] = useState({});
   const [activeTab, setActiveTab] = useState("Quest");
+  const [questions, setQuestions] = useState({});
+  const navigate = useNavigate();
 
   useEffect(() => {
-    fireDb.child("QuestionsList").on("value", (snapshot) => {
+    fireDb.child("Questions").on("value", (snapshot) => {
       if (snapshot.val() !== null) {
-        setData({ ...snapshot.val() });
+        snapshot.forEach((child) => {
+          setQuestions({ ...snapshot.val() });
+        });
       } else {
-        setData({});
+        setQuestions({});
       }
     });
 
     return () => {
-      setData({});
+      setQuestions({});
     };
   }, []);
 
-  const onDelete = (id) => {
-    if (window.confirm("Are you sure you want to delete this Question?")) {
-      fireDb.child(`QuestionsList/${id}`).remove((err) => {
-        if (err) {
-          toast.error(err);
-        } else {
+  const handleEdit = (qnsId, question, qIndex, quizId) => {
+    navigate(`/updateQuestion/${qnsId}`, {
+      state: {
+        question: question,
+        qIndex: qIndex,
+        quizId: quizId,
+      },
+    });
+  };
+
+  const handleDelete = (qnsId, question, qIndex, quizId) => {
+    let qns = [];
+    fireDb.child(`Questions/${qnsId}/questions`).on("value", (snapshot) => {
+      qns = snapshot.val();
+    });
+
+    qns = qns.filter((q, index) => qIndex !== index);
+
+    if (qns.length === 0) {
+      fireDb
+        .child(`Questions/${qnsId}`)
+        .remove()
+        .then(() => {
           toast.success("Question Deleted Successfully");
-        }
-      });
+        })
+        .catch((err) => {
+          toast.error(err);
+        });
+    } else {
+      if (window.confirm("Are you sure you want to delete this Question?")) {
+        fireDb
+          .child(`Questions/${qnsId}/questions`)
+          .set(qns)
+          .then(() => {
+            toast.success("Question Deleted Successfully");
+          })
+          .catch((err) => {
+            toast.error(err);
+          });
+      }
     }
   };
 
   return (
     <>
-    <Header />
-    <br />
-    <br />
+      <Header />
+      <br />
+      <br />
       <Link to="/addQuestions">
         <button className="btn btn-edit">
           <p
@@ -53,53 +87,67 @@ const QuestionsHome = () => {
         </button>
       </Link>
       <div style={{ marginTop: "30px" }}>
-      {Object.keys(data).map((id, index) => {
-              return (
-                <Card style={{marginTop: "20px"}}>
-                  <CardHeader><p className="titletxt">{data[id].quizID} - {data[id].questId}</p><br></br>{data[id].quizType}
-                  </CardHeader>
-                  <CardBody>
-                  <div> Question 1: {data[id].question1}</div>
-                    <p>Options: {data[id].question1_mcq1}, {data[id].question1_mcq2}, {data[id].question1_mcq3}, {data[id].question1_mcq4}</p>
-                    <p>Correct Answer: {data[id].answer1}</p>
-
-                    <br></br>
-                    <div> Question 2: {data[id].question2}</div>
-                    <p>Options: {data[id].question2_mcq1}, {data[id].question2_mcq2}, {data[id].question2_mcq3}, {data[id].question2_mcq4}</p>
-                    <p>Correct Answer: {data[id].answer2}</p>
-
-                    <br></br>
-                    <div> Question 3: {data[id].question3}</div>
-                    <p>Options: {data[id].question3_mcq1}, {data[id].question3_mcq2}, {data[id].question3_mcq3}, {data[id].question3_mcq4}</p>
-                    <p>Correct Answer: {data[id].answer3}</p>
-
-                    <br></br>
-                    <div> Question 4: {data[id].question4}</div>
-                    <p>Options: {data[id].question4_mcq1}, {data[id].question4_mcq2}, {data[id].question4_mcq3}, {data[id].question4_mcq4}</p>
-                    <p>Correct Answer: {data[id].answer4}</p>
-
-                    <br></br>
-                    <div> Question 5: {data[id].question5}</div>
-                    <p>Options: {data[id].question5_mcq1}, {data[id].question5_mcq2}, {data[id].question5_mcq3}, {data[id].question5_mcq4}</p>
-                    <p>Correct Answer: {data[id].answer5}</p>
-
-                    <br></br>
-                  </CardBody>
-                  <CardFooter>
-                  <Link to={`/updateQuestions/${id}`}>
-                      <button className="btn btn-edit">Edit</button>
-                    </Link>
-                    <button
-                      className="btn btn-delete"
-                      onClick={() => onDelete(id)}
-                    >
-                      Delete
-                    </button>
-                    
-                  </CardFooter>
-                </Card>
-              );
-            })}
+        {Object.keys(questions).map((id, index) => {
+          return (
+            <Card style={{ marginTop: "20px" }} key={index}>
+              <CardHeader style={{ display: "block" }}>
+                <p className="titletxt">{questions[id].quizId}</p>
+              </CardHeader>
+              <CardBody>
+                {questions[id].questions.map((question, qIndex) => {
+                  return (
+                    <div key={qIndex}>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                        }}
+                      >
+                        <strong>Question {qIndex + 1} </strong>
+                        <div>
+                          <button
+                            className="btn btn-edit"
+                            onClick={() =>
+                              handleEdit(
+                                id,
+                                question,
+                                qIndex,
+                                questions[id].quizId
+                              )
+                            }
+                          >
+                            Edit
+                          </button>
+                          <button
+                            className="btn btn-delete"
+                            onClick={() =>
+                              handleDelete(
+                                id,
+                                question,
+                                qIndex,
+                                questions[id].quizId
+                              )
+                            }
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                      <p>{question.questionTitle}</p>
+                      <br />
+                      <i>Options</i>
+                      {question.questionOptions.map((option, opIndex) => {
+                        return <p key={opIndex}>{option}</p>;
+                      })}
+                      <p>Correct Answer: {question.questionAnswer}</p>
+                    </div>
+                  );
+                })}
+              </CardBody>
+            </Card>
+          );
+        })}
       </div>
     </>
   );
