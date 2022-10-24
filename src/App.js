@@ -15,8 +15,7 @@ import RewardsHome from "./pages/Rewards/RewardsHome";
 import AddEditRewards from "./pages/Rewards/AddEditRewards";
 import ViewRewards from "./pages/Rewards/ViewRewards";
 import QuestionsHome from "./pages/Questions/QuestionsHome";
-import AddEditQuestions from "./pages/Questions/AddEditQuestions";
-import ViewQuestions from "./pages/Questions/ViewQuestions";
+import AddQuestions from "./pages/Questions/AddQuestions";
 import UsersHome from "./pages/Users/UsersHome";
 import MerchantsHome from "./pages/Merchants/MerchantsHome";
 import ProjectsHome from "./pages/Projects/ProjectsHome";
@@ -28,6 +27,7 @@ import Home from "./pages/Home";
 import Login from "./components/Login";
 import QuizHome from "./pages/Quizzes/QuizHome";
 import AddEditQuiz from "./pages/Quizzes/AddEditQuiz";
+import EditQuestion from "./pages/Questions/EditQuestion";
 import ViewJoinedQuest from "./pages/Quests/ViewJoinedQuest";
 
 function App() {
@@ -60,9 +60,8 @@ function App() {
             <Route path="/updateRewards/:id" element={<AddEditRewards />} />
             <Route path="/viewRewards/:id" element={<ViewRewards />} />
             <Route path="/questionsHome" element={<QuestionsHome />} />
-            <Route path="/addQuestions" element={<AddEditQuestions />} />
-            <Route path="/updateQuestions/:id" element={<AddEditQuestions />} />
-            <Route path="/viewQuestions/:id" element={<ViewQuestions />} />
+            <Route path="/addQuestions" element={<AddQuestions />} />
+            <Route path="/updateQuestion/:id" element={<EditQuestion />} />
             <Route path="/usersHome/:id" element={<UsersHome />} />
             <Route path="/merchantsHome/:id" element={<MerchantsHome />} />
             <Route path="/projectsHome" element={<ProjectsHome />} />
